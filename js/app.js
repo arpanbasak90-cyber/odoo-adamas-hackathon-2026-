@@ -2,6 +2,9 @@
    HRMS App — Router, Layout, Navbar renderer
    ============================================================ */
 
+// ── Global Pages namespace (must be at top, page scripts assign to this) ──
+window.Pages = {};
+
 const App = (() => {
 
   // ── Navbar Icons ─────────────────────────────────────────────
@@ -169,8 +172,8 @@ const Router = (() => {
   return { init, go, getParams };
 })();
 
-// ── Pages namespace ───────────────────────────────────────────
-const Pages = {};
+// Pages namespace is declared at the top of this file as window.Pages
+// All page scripts assign their modules to Pages.X
 
 // Start when all scripts are loaded
 window.addEventListener('load', App.init);
