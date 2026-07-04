@@ -17,7 +17,6 @@ Built as a Single Page Application (SPA) using Vanilla JavaScript, HTML5, and CS
 **Login Page**
 
 
-
 **Employee Dashboard**
 
 
