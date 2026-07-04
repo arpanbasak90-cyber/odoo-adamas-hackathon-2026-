@@ -64,15 +64,19 @@ const Auth = (() => {
       if (error) throw error;
       if (!data) return { ok: false, error: 'Incorrect credentials. Please try again.' };
 
+      // Handle both single object or array response from Supabase RPC
+      const userRecord = Array.isArray(data) ? data[0] : data;
+      if (!userRecord) return { ok: false, error: 'Incorrect credentials. Please try again.' };
+
       // Map snake_case response to user object
       const user = {
-        id: data.id,
-        loginId: data.login_id,
-        email: data.email,
-        role: data.role,
-        name: data.name,
-        designation: data.designation,
-        department: data.department
+        id: userRecord.id,
+        loginId: userRecord.login_id,
+        email: userRecord.email,
+        role: userRecord.role,
+        name: userRecord.name,
+        designation: userRecord.designation,
+        department: userRecord.department
       };
 
       _setSession(user, remember);
