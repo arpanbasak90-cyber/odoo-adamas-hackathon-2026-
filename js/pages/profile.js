@@ -1,5 +1,5 @@
 /* ============================================================
-   Profile Page — View/Edit with tabs: Personal | Private | Salary | Documents
+   Profile Page (Supabase Async Version)
    ============================================================ */
 Pages.Profile = (() => {
 
@@ -8,7 +8,7 @@ Pages.Profile = (() => {
   let activeTab   = 'personal';
   let profilePicBase64 = null;
 
-  const render = () => {
+  const render = async () => {
     const currentUser = Auth.requireAuth();
     if (!currentUser) return;
 
@@ -18,13 +18,16 @@ Pages.Profile = (() => {
     const uid    = params.id || currentUser.id;
     const mode   = params.mode || 'view';
 
-    targetUser = Store.getUserById(uid) || currentUser;
-    editMode   = mode === 'edit' || (Auth.isAdmin() && mode !== 'view');
+    targetUser = await Store.getUserById(uid);
+    if (!targetUser) targetUser = currentUser;
+
+    editMode = mode === 'edit' || (Auth.isAdmin() && mode !== 'view');
     // Employees editing their own profile
     if (targetUser.id === currentUser.id && !Auth.isAdmin()) editMode = true;
 
     document.title = `${targetUser.name} — HRMS`;
-    document.getElementById('app').innerHTML = App.renderShell('employees', _buildHTML(currentUser));
+    const shellHTML = await App.renderShell('employees', _buildHTML(currentUser));
+    document.getElementById('app').innerHTML = shellHTML;
     _renderTabContent();
     _bindEvents(currentUser);
   };
@@ -104,7 +107,6 @@ Pages.Profile = (() => {
 
   const _renderTabContent = () => {
     const isAdmin = Auth.isAdmin();
-    const isOwn   = targetUser.id === Auth.getCurrentUser()?.id;
     const canEditField = (field) => {
       if (isAdmin) return true;
       // Employees can only edit: phone, address, about, skills, certifications, profilePic
@@ -259,7 +261,7 @@ Pages.Profile = (() => {
     } else if (activeTab === 'documents') {
       const docs = targetUser.documents || [];
       content.innerHTML = `
-      ${isAdmin || targetUser.id === Auth.getCurrentUser()?.id ? `
+      ${isAdmin || targetUser.id === Auth.getCurrentUserSync()?.id ? `
       <div style="margin-bottom:var(--space-5)">
         <div class="file-upload" onclick="document.getElementById('doc-upload').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px;color:var(--color-text-400)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -281,13 +283,13 @@ Pages.Profile = (() => {
 
       // Bind doc upload
       setTimeout(() => {
-        document.getElementById('doc-upload')?.addEventListener('change', (e) => {
+        document.getElementById('doc-upload')?.addEventListener('change', async (e) => {
           const file = e.target.files[0];
           if (!file) return;
           const docs = targetUser.documents || [];
           docs.push({ name: file.name, uploadedAt: Utils.today() });
-          Store.updateUser(targetUser.id, { documents: docs });
-          targetUser = Store.getUserById(targetUser.id);
+          await Store.updateUser(targetUser.id, { documents: docs });
+          targetUser = await Store.getUserById(targetUser.id);
           _renderTabContent();
           Utils.toast('Document uploaded!', 'success');
         });
@@ -394,11 +396,11 @@ Pages.Profile = (() => {
     workingDaysPerWeek: parseInt(document.getElementById('sal-wdpw')?.value) || 5,
   });
 
-  const saveSalary = () => {
+  const saveSalary = async () => {
     const data = _getSalaryFormData();
     if (!data.monthlyWage) { Utils.toast('Please enter a monthly wage.', 'error'); return; }
-    Store.updateSalary(targetUser.id, data);
-    targetUser = Store.getUserById(targetUser.id);
+    await Store.updateSalary(targetUser.id, data);
+    targetUser = await Store.getUserById(targetUser.id);
     Utils.closeModal();
     Utils.toast('Salary structure saved!', 'success');
     _renderTabContent();
@@ -419,25 +421,24 @@ Pages.Profile = (() => {
     _renderTabContent();
   };
 
-  const removeDocument = (index) => {
+  const removeDocument = async (index) => {
     const docs = [...(targetUser.documents || [])];
     docs.splice(index, 1);
-    Store.updateUser(targetUser.id, { documents: docs });
-    targetUser = Store.getUserById(targetUser.id);
+    await Store.updateUser(targetUser.id, { documents: docs });
+    targetUser = await Store.getUserById(targetUser.id);
     _renderTabContent();
     Utils.toast('Document removed.', 'info');
   };
 
   // ── Save / Cancel ────────────────────────────────────────────
-  const cancelEdit = () => {
+  const cancelEdit = async () => {
     editMode = false;
     profilePicBase64 = null;
-    targetUser = Store.getUserById(targetUser.id);
+    targetUser = await Store.getUserById(targetUser.id);
     Router.go('profile', { id: targetUser.id, mode: 'view' });
   };
 
-  const _saveProfile = () => {
-    const isAdmin = Auth.isAdmin();
+  const _saveProfile = async () => {
     const updates = {};
 
     // Collect all editable field values
@@ -457,15 +458,16 @@ Pages.Profile = (() => {
       profilePicBase64 = null; // Reset after saving
     }
 
-    Store.updateUser(targetUser.id, updates);
-    targetUser = Store.getUserById(targetUser.id);
+    await Store.updateUser(targetUser.id, updates);
+    targetUser = await Store.getUserById(targetUser.id);
     editMode   = false;
     Utils.toast('Profile saved successfully!', 'success');
 
     // Re-render
-    document.getElementById('app').innerHTML = App.renderShell('employees', _buildHTML(Auth.getCurrentUser()));
+    const shellHTML = await App.renderShell('employees', _buildHTML(Auth.getCurrentUserSync()));
+    document.getElementById('app').innerHTML = shellHTML;
     _renderTabContent();
-    _bindEvents(Auth.getCurrentUser());
+    _bindEvents(Auth.getCurrentUserSync());
   };
 
   // ── Bind Events ──────────────────────────────────────────────
@@ -481,11 +483,12 @@ Pages.Profile = (() => {
     });
 
     // Edit / Save button
-    document.getElementById('edit-save-btn')?.addEventListener('click', () => {
-      if (editMode) { _saveProfile(); }
+    document.getElementById('edit-save-btn')?.addEventListener('click', async () => {
+      if (editMode) { await _saveProfile(); }
       else {
         editMode = true;
-        document.getElementById('app').innerHTML = App.renderShell('employees', _buildHTML(currentUser));
+        const shellHTML = await App.renderShell('employees', _buildHTML(currentUser));
+        document.getElementById('app').innerHTML = shellHTML;
         _renderTabContent();
         _bindEvents(currentUser);
       }

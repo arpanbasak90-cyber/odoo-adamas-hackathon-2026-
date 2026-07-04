@@ -1,35 +1,86 @@
 /* ============================================================
-   HRMS Auth — Session management, role guards
+   HRMS Auth — Supabase/Async Edition
+   Session management, role guards with support for async Store.
    ============================================================ */
 
 const Auth = (() => {
   const SESSION_KEY = 'hrms_session';
+  let _cachedUser = null; // Cache to allow synchronous checks where needed
 
-  const getSession    = ()     => JSON.parse(sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY) || 'null');
-  const _setSession   = (user, remember) => {
-    const data = JSON.stringify(user);
+  const getSession = () => JSON.parse(sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY) || 'null');
+  
+  const _setSession = (user, remember) => {
+    const data = JSON.stringify({ id: user.id, role: user.role, name: user.name, designation: user.designation });
     sessionStorage.setItem(SESSION_KEY, data);
     if (remember) localStorage.setItem(SESSION_KEY, data);
+    _cachedUser = user;
   };
-  const clearSession  = ()     => { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); };
 
-  const getCurrentUser = () => {
+  const clearSession = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    _cachedUser = null;
+  };
+
+  // Async fetch for fresh user data
+  const getCurrentUser = async () => {
     const session = getSession();
     if (!session) return null;
-    // Re-fetch from store for fresh data
-    return Store.getUserById(session.id) || null;
+    try {
+      const user = await Store.getUserById(session.id);
+      _cachedUser = user;
+      return user;
+    } catch (e) {
+      console.error('[Auth] Failed to fetch current user', e);
+      return session; // Fallback to session details if database is down
+    }
   };
 
-  const isLoggedIn = () => !!getCurrentUser();
-  const isAdmin    = () => { const u = getCurrentUser(); return u && (u.role === 'admin' || u.role === 'hr'); };
+  // Sync check using session cache
+  const getCurrentUserSync = () => {
+    if (_cachedUser) return _cachedUser;
+    const session = getSession();
+    return session;
+  };
 
-  const login = (loginIdOrEmail, password, remember = false) => {
-    // Try login ID first, then email
-    let user = Store.getUserByLoginId(loginIdOrEmail) || Store.getUserByEmail(loginIdOrEmail);
-    if (!user)       return { ok: false, error: 'No account found with these credentials.' };
-    if (user.password !== password) return { ok: false, error: 'Incorrect password. Please try again.' };
-    _setSession({ id: user.id, role: user.role }, remember);
-    return { ok: true, user };
+  const isLoggedIn = () => {
+    return !!getSession();
+  };
+
+  const isAdmin = () => {
+    const u = getCurrentUserSync();
+    return u && (u.role === 'admin' || u.role === 'hr');
+  };
+
+  // Async login using database verification function
+  const login = async (loginIdOrEmail, password, remember = false) => {
+    try {
+      // Direct call to stored procedure for secure server-side verification
+      const { data, error } = await window._supabase.rpc('fn_verify_password', {
+        p_login_or_email: loginIdOrEmail,
+        p_password:       password
+      });
+
+      if (error) throw error;
+      if (!data) return { ok: false, error: 'Incorrect credentials. Please try again.' };
+
+      // Map snake_case response to user object
+      const user = {
+        id: data.id,
+        loginId: data.login_id,
+        email: data.email,
+        role: data.role,
+        name: data.name,
+        designation: data.designation,
+        department: data.department
+      };
+
+      _setSession(user, remember);
+      return { ok: true, user };
+    } catch (e) {
+      console.error('[Auth] Login error:', e);
+      return { ok: false, error: e.message || 'An error occurred during authentication.' };
+    }
   };
 
   const logout = () => {
@@ -39,8 +90,11 @@ const Auth = (() => {
 
   // Route guard — call at top of each page init
   const requireAuth = (role = null) => {
-    const user = getCurrentUser();
-    if (!user) { window.location.hash = '#/login'; return null; }
+    const user = getSession();
+    if (!user) {
+      window.location.hash = '#/login';
+      return null;
+    }
     if (role && user.role !== role && !(role === 'admin' && user.role === 'hr')) {
       window.location.hash = '#/employees';
       return null;
@@ -49,9 +103,22 @@ const Auth = (() => {
   };
 
   const requireGuest = () => {
-    if (isLoggedIn()) { window.location.hash = '#/employees'; return false; }
+    if (isLoggedIn()) {
+      window.location.hash = '#/employees';
+      return false;
+    }
     return true;
   };
 
-  return { getSession, getCurrentUser, isLoggedIn, isAdmin, login, logout, requireAuth, requireGuest };
+  return { 
+    getSession, 
+    getCurrentUser, 
+    getCurrentUserSync, 
+    isLoggedIn, 
+    isAdmin, 
+    login, 
+    logout, 
+    requireAuth, 
+    requireGuest 
+  };
 })();

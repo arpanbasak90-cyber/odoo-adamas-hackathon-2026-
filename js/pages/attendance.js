@@ -1,5 +1,5 @@
 /* ============================================================
-   Attendance Page
+   Attendance Page (Supabase Async Version)
    ============================================================ */
 Pages.Attendance = (() => {
 
@@ -11,22 +11,22 @@ Pages.Attendance = (() => {
   let viewEmployee = null; // For admin switching
   let daySearch    = '';
 
-  const render = () => {
+  const render = async () => {
     const user = Auth.requireAuth();
     if (!user) return;
     document.title = 'Attendance — HRMS';
     viewEmployee = user;
 
-    document.getElementById('app').innerHTML = App.renderShell('attendance', _buildHTML(user));
+    document.getElementById('app').innerHTML = await App.renderShell('attendance', await _buildHTML(user));
     _bindEvents(user);
-    _renderTable(user);
+    await _renderTable(user);
   };
 
-  const _buildHTML = (user) => {
+  const _buildHTML = async (user) => {
     const isAdmin = Auth.isAdmin();
-    const employees = Store.getEmployees();
+    const employees = await Store.getEmployees();
 
-    const stats = Store.getMonthStats(user.id, currentYear, currentMonth);
+    const stats = await Store.getMonthStats(user.id, currentYear, currentMonth);
 
     return `
     <div class="page-header">
@@ -90,18 +90,18 @@ Pages.Attendance = (() => {
     </div>`;
   };
 
-  const _renderTable = (targetUser) => {
+  const _renderTable = async (targetUser) => {
     const isAdmin = Auth.isAdmin();
     const user    = targetUser || viewEmployee;
 
     if (currentView === 'day' && isAdmin) {
-      _renderDayTable();
+      await _renderDayTable();
     } else {
-      _renderMonthTable(user);
+      await _renderMonthTable(user);
     }
   };
 
-  const _renderMonthTable = (user) => {
+  const _renderMonthTable = async (user) => {
     // Update header nav
     const header = document.getElementById('table-header');
     if (header) header.innerHTML = `
@@ -133,7 +133,7 @@ Pages.Attendance = (() => {
     </tr>`;
 
     // Get attendance for the month
-    const records = Store.getAttendanceByUserAndMonth(user.id, currentYear, currentMonth);
+    const records = await Store.getAttendanceByUserAndMonth(user.id, currentYear, currentMonth);
     const recMap  = {};
     records.forEach(r => { recMap[r.date] = r; });
 
@@ -174,7 +174,7 @@ Pages.Attendance = (() => {
     tbody.innerHTML = rows || `<tr><td colspan="7"><div class="empty-state" style="padding:var(--space-10)"><div class="empty-state-title">No records yet</div></div></td></tr>`;
 
     // Update stats
-    const stats = Store.getMonthStats(user.id, currentYear, currentMonth);
+    const stats = await Store.getMonthStats(user.id, currentYear, currentMonth);
     const sp = document.getElementById('stat-present');
     const sl = document.getElementById('stat-leave');
     const sw = document.getElementById('stat-workdays');
@@ -183,7 +183,7 @@ Pages.Attendance = (() => {
     if (sw) sw.textContent = stats.workDays;
   };
 
-  const _renderDayTable = () => {
+  const _renderDayTable = async () => {
     const header = document.getElementById('table-header');
     if (header) header.innerHTML = `
       <div class="nav-pager">
@@ -215,22 +215,21 @@ Pages.Attendance = (() => {
       <th>Status</th>
     </tr>`;
 
-    const employees = Store.getUsers().filter(u => u.role !== 'admin');
-    const records = Store.getAttendanceByDate(currentDayDate);
+    const employees = (await Store.getUsers()).filter(u => u.role !== 'admin');
+    const records = await Store.getAttendanceByDate(currentDayDate);
     const recMap = {};
     records.forEach(r => recMap[r.userId] = r);
 
     const isWeekend = new Date(currentDayDate + 'T00:00:00').getDay() === 0 || new Date(currentDayDate + 'T00:00:00').getDay() === 6;
     const isFuture  = currentDayDate > Utils.today();
-    const todayStr  = Utils.today();
 
     let rows = '';
-    employees.forEach(emp => {
-      if (daySearch && !emp.name.toLowerCase().includes(daySearch.toLowerCase()) && !emp.loginId.toLowerCase().includes(daySearch.toLowerCase())) return;
+    for (const emp of employees) {
+      if (daySearch && !emp.name.toLowerCase().includes(daySearch.toLowerCase()) && !emp.loginId.toLowerCase().includes(daySearch.toLowerCase())) continue;
 
       const rec = recMap[emp.id];
-      // Check for leave
-      const leaves = Store.getLeavesByUser(emp.id);
+      // Check for approved leaves
+      const leaves = await Store.getLeavesByUser(emp.id);
       const onLeave = leaves.some(l => l.status === 'approved' && l.startDate <= currentDayDate && l.endDate >= currentDayDate);
 
       let status = '—';
@@ -252,62 +251,62 @@ Pages.Attendance = (() => {
         <td>${rec?.extraHours && parseFloat(rec.extraHours) > 0 ? `<span style="color:var(--color-success)">+${rec.extraHours}h</span>` : '<span style="color:var(--color-text-300)">0h</span>'}</td>
         <td>${status}</td>
       </tr>`;
-    });
+    }
 
     tbody.innerHTML = rows || `<tr><td colspan="7"><div class="empty-state" style="padding:var(--space-10)"><div class="empty-state-title">No employees found</div></div></td></tr>`;
 
     // Bind search event
-    document.getElementById('day-search')?.addEventListener('input', (e) => {
+    document.getElementById('day-search')?.addEventListener('input', async (e) => {
       daySearch = e.target.value;
-      _renderDayTable();
+      await _renderDayTable();
     });
   };
 
-  const prevPeriod = () => {
+  const prevPeriod = async () => {
     currentMonth--;
     if (currentMonth < 1) { currentMonth = 12; currentYear--; }
-    _renderTable(viewEmployee);
+    await _renderTable(viewEmployee);
   };
 
-  const nextPeriod = () => {
+  const nextPeriod = async () => {
     currentMonth++;
     if (currentMonth > 12) { currentMonth = 1; currentYear++; }
-    _renderTable(viewEmployee);
+    await _renderTable(viewEmployee);
   };
 
-  const prevDay = () => {
+  const prevDay = async () => {
     const d = new Date(currentDayDate + 'T00:00:00');
     d.setDate(d.getDate() - 1);
     currentDayDate = d.toISOString().split('T')[0];
-    _renderTable(viewEmployee);
+    await _renderTable(viewEmployee);
   };
 
-  const nextDay = () => {
+  const nextDay = async () => {
     const d = new Date(currentDayDate + 'T00:00:00');
     d.setDate(d.getDate() + 1);
     currentDayDate = d.toISOString().split('T')[0];
-    _renderTable(viewEmployee);
+    await _renderTable(viewEmployee);
   };
 
   const _bindEvents = (user) => {
-    document.getElementById('emp-switcher')?.addEventListener('change', (e) => {
+    document.getElementById('emp-switcher')?.addEventListener('change', async (e) => {
       const uid = e.target.value;
-      viewEmployee = Store.getUserById(uid) || user;
-      _renderTable(viewEmployee);
+      viewEmployee = (await Store.getUserById(uid)) || user;
+      await _renderTable(viewEmployee);
     });
 
-    document.getElementById('view-month')?.addEventListener('click', () => {
+    document.getElementById('view-month')?.addEventListener('click', async () => {
       currentView = 'month';
-      document.getElementById('app').innerHTML = App.renderShell('attendance', _buildHTML(user));
+      document.getElementById('app').innerHTML = await App.renderShell('attendance', await _buildHTML(user));
       _bindEvents(user);
-      _renderTable(viewEmployee);
+      await _renderTable(viewEmployee);
     });
 
-    document.getElementById('view-day')?.addEventListener('click', () => {
+    document.getElementById('view-day')?.addEventListener('click', async () => {
       currentView = 'day';
-      document.getElementById('app').innerHTML = App.renderShell('attendance', _buildHTML(user));
+      document.getElementById('app').innerHTML = await App.renderShell('attendance', await _buildHTML(user));
       _bindEvents(user);
-      _renderTable(viewEmployee);
+      await _renderTable(viewEmployee);
     });
   };
 

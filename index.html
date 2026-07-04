@@ -36,6 +36,14 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- Supabase Client SDK and Initialization -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const savedUrl = localStorage.getItem('hrms_supabase_url') || 'https://jzqxldsxgmwexrsekcoi.supabase.co';
+    const savedKey = localStorage.getItem('hrms_supabase_key') || 'sb_publishable_ZeMpy0qab6_QcUWycS-ctw_R-EqOmxY';
+    window._supabase = supabase.createClient(savedUrl, savedKey);
+  </script>
+
   <!-- JavaScript — Data Layer -->
   <script src="js/store.js"></script>
   <script src="js/auth.js"></script>

@@ -1,5 +1,5 @@
 /* ============================================================
-   Signup Page — Admin/Company Setup Only
+   Signup Page — Admin/Company Setup (Supabase Async Version)
    ============================================================ */
 Pages.Signup = (() => {
 
@@ -175,7 +175,7 @@ Pages.Signup = (() => {
     if (el) el.textContent = msg;
   };
 
-  const _submit = () => {
+  const _submit = async () => {
     _clearErrors();
     const companyName = document.getElementById('companyName')?.value?.trim();
     const name        = document.getElementById('name')?.value?.trim();
@@ -190,25 +190,50 @@ Pages.Signup = (() => {
     if (!Utils.validate.email(email)) { _showError('email-error', 'Please enter a valid email address.'); valid = false; }
     if (Utils.passwordStrength(pw) < 2) { _showError('pw-error', 'Password is too weak. Add uppercase letters, numbers and symbols.'); valid = false; }
     if (pw !== confirmPw)          { _showError('confirm-pw-error', 'Passwords do not match.'); valid = false; }
-    if (Store.getUserByEmail(email)) { _showError('email-error', 'An account with this email already exists.'); valid = false; }
     if (!valid) return;
+
+    // Check email uniqueness asynchronously
+    const existing = await Store.getUserByEmail(email);
+    if (existing) { _showError('email-error', 'An account with this email already exists.'); return; }
 
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Creating your workspace...';
 
-    setTimeout(() => {
-      // Create company
-      const company = Store.createCompany({ name: companyName, logo: logoBase64 });
-      // Create admin user
-      Store.createUser({
-        loginId: email, name, email, password: pw, role: 'admin',
-        companyId: company.id, designation: 'HR Manager', department: 'Administration',
-        joinDate: Utils.today(), serialNo: 0,
-      });
-      // Login
-      Auth.login(email, pw, false);
-      Utils.toast('Company created! Welcome to HRMS 🎉', 'success');
-      setTimeout(() => Router.go('employees'), 500);
+    // Simulated short delay for UI transition
+    setTimeout(async () => {
+      try {
+        // Create company on database
+        const { data: company, error: cErr } = await window._supabase
+          .from('company')
+          .insert([{ name: companyName, logo_url: logoBase64 }])
+          .select().single();
+        
+        if (cErr) throw cErr;
+
+        // Create admin user on database
+        await Store.createUser({
+          loginId: email,
+          name: name,
+          email: email,
+          password: pw,
+          role: 'admin',
+          companyId: company.id,
+          designation: 'HR Manager',
+          department: 'Administration',
+          joinDate: Utils.today(),
+          serialNo: 0,
+        });
+
+        // Log in
+        await Auth.login(email, pw, false);
+        Utils.toast('Company created! Welcome to HRMS 🎉', 'success');
+        setTimeout(() => Router.go('employees'), 500);
+      } catch (e) {
+        console.error(e);
+        _showError('form-error', e.message || 'Workspace creation failed.');
+        btn.disabled = false;
+        btn.textContent = 'Create Company Account';
+      }
     }, 800);
   };
 
