@@ -143,9 +143,17 @@ const Store = (() => {
 
   // ── Company ───────────────────────────────────────────────
   const getCompany = async () => {
-    const { data, error } = await db().from('company').select('*').single();
-    if (error) _err(error, 'getCompany');
-    return data ? { id: data.id, name: data.name, logo: data.logo_url } : null;
+    try {
+      const { data, error } = await db().from('company').select('*').maybeSingle();
+      if (error) {
+        console.warn('[Store.getCompany] Could not fetch company (RLS may need configuring):', error.message);
+        return { id: null, name: 'HRMS', logo: null }; // Graceful fallback
+      }
+      return data ? { id: data.id, name: data.name, logo: data.logo_url } : { id: null, name: 'HRMS', logo: null };
+    } catch (e) {
+      console.warn('[Store.getCompany] Unexpected error:', e.message);
+      return { id: null, name: 'HRMS', logo: null };
+    }
   };
 
   const saveCompany = async (updates) => {
