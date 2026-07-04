@@ -71,7 +71,7 @@ Pages.Login = (() => {
           <div class="auth-loginid-hint">
             <strong>Demo credentials:</strong><br>
             Admin: <code>admin@hrms.com</code> / <code>Admin@123</code><br>
-            Employee: <code>OI-EMP-2024-001</code> / <code>Pass@123</code>
+            Employee: <code>OIJODO2024001</code> / <code>Pass@123</code>
           </div>
 
           <div class="auth-form-footer" style="margin-top:var(--space-5)">
