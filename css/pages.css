@@ -805,12 +805,13 @@
 }
 
 /* ══════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════ */
+   RESPONSIVE (Comprehensive)
+   ══════════════════════════════════════ */
 @media (max-width: 1200px) {
   .year-calendar { grid-template-columns: repeat(3, 1fr); }
   .profile-layout { grid-template-columns: 240px 1fr; }
 }
+
 @media (max-width: 900px) {
   .auth-page { grid-template-columns: 1fr; }
   .auth-brand { display: none; }
@@ -818,13 +819,50 @@
   .year-calendar { grid-template-columns: repeat(2, 1fr); }
   .employees-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   .profile-layout { grid-template-columns: 1fr; }
+  .profile-sidebar-card { position: static; margin-bottom: var(--space-6); }
   .page-content { padding: var(--space-5) var(--space-4); }
   .info-grid { grid-template-columns: 1fr; }
   .attendance-stats { grid-template-columns: 1fr 1fr; }
   .leave-balance-cards { flex-wrap: wrap; }
+  .page-header { flex-direction: column; align-items: stretch; gap: var(--space-4); }
+  .page-header-right { justify-content: space-between; width: 100%; }
 }
-@media (max-width: 600px) {
-  .year-calendar { grid-template-columns: repeat(2, 1fr); }
-  .checkin-widget { flex-wrap: wrap; gap: var(--space-4); }
+
+@media (max-width: 768px) {
+  .navbar { padding: 0 var(--space-4); gap: var(--space-2); }
   .navbar-company-name { display: none; }
+  .nav-link { padding: var(--space-2); font-size: 0; }
+  .nav-link svg { width: 20px; height: 20px; }
+  
+  .card-header { flex-direction: column; align-items: flex-start; gap: var(--space-4); padding: var(--space-4); }
+  .nav-pager { justify-content: flex-start; width: 100%; }
+  
+  .search-input { width: 100%; min-width: 0; }
+  .search-input:focus { width: 100%; }
+  .search-bar { width: 100%; flex: 1; }
+  
+  /* Tables horizontally scrollable */
+  .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table th, .table td { white-space: nowrap; }
+
+  /* Modals */
+  .modal-overlay { padding: var(--space-2); align-items: flex-end; }
+  .modal { max-height: 85vh; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  .modal-body { padding: var(--space-4); }
+  .modal .grid-2 { grid-template-columns: 1fr; }
+  
+  .checkin-widget { flex-direction: column; align-items: stretch; text-align: center; gap: var(--space-4); }
+  .checkin-divider { width: 100%; height: 1px; }
+  .checkin-actions { justify-content: center; margin: 0 auto; }
+}
+
+@media (max-width: 480px) {
+  .year-calendar { grid-template-columns: 1fr; }
+  .attendance-stats { grid-template-columns: 1fr; }
+  .filter-group { width: 100%; display: flex; }
+  .filter-pill { flex: 1; text-align: center; padding: 6px 4px; font-size: 11px; }
+  
+  /* Salary layout */
+  .profile-main-card > .card-body > div > div[style*="display:grid"] { grid-template-columns: 1fr !important; }
+  .salary-total-row { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
 }
