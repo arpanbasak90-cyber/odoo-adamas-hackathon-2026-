@@ -579,43 +579,43 @@ INSERT INTO public.employees (
   join_date, account_number, about
 ) VALUES
   ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-001', 'john.doe@hrms.com',   crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OIJODO2024001', 'john.doe@hrms.com',   crypt('Pass@123', gen_salt('bf')), 'employee',
    'John Doe',    1, '+91 98765 10001', 'Mumbai, MH',    '1992-01-10',
    'Engineering', 'Software Engineer',   '2024-01-15', 'HDFC000100000',
    'Experienced Software Engineer with a passion for delivering high-quality results.'),
 
   ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-002', 'sarah.smith@hrms.com', crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OISASM2024002', 'sarah.smith@hrms.com', crypt('Pass@123', gen_salt('bf')), 'employee',
    'Sarah Smith', 2, '+91 98765 10002', 'Delhi, DL',     '1993-02-11',
    'Design',      'UI/UX Designer',       '2024-03-01', 'HDFC000100001',
    'Experienced UI/UX Designer with a passion for delivering high-quality results.'),
 
   ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-003', 'rahul.verma@hrms.com', crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OIRAVE2024003', 'rahul.verma@hrms.com', crypt('Pass@123', gen_salt('bf')), 'employee',
    'Rahul Verma', 3, '+91 98765 10003', 'Bangalore, KA', '1994-03-12',
    'Engineering', 'Backend Developer',    '2024-02-10', 'HDFC000100002',
    'Experienced Backend Developer with a passion for delivering high-quality results.'),
 
   ('20000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-004', 'priya.sharma@hrms.com',crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OIPRSH2024004', 'priya.sharma@hrms.com',crypt('Pass@123', gen_salt('bf')), 'employee',
    'Priya Sharma',4, '+91 98765 10004', 'Pune, MH',      '1995-04-13',
    'Marketing',   'Marketing Executive',  '2024-04-01', 'HDFC000100003',
    'Experienced Marketing Executive with a passion for delivering high-quality results.'),
 
   ('20000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-005', 'amit.kumar@hrms.com',  crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OIAMKU2024005', 'amit.kumar@hrms.com',  crypt('Pass@123', gen_salt('bf')), 'employee',
    'Amit Kumar',  5, '+91 98765 10005', 'Chennai, TN',   '1996-05-14',
    'Sales',       'Sales Manager',        '2024-01-20', 'HDFC000100004',
    'Experienced Sales Manager with a passion for delivering high-quality results.'),
 
   ('20000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-006', 'neha.gupta@hrms.com',  crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OINEGU2024006', 'neha.gupta@hrms.com',  crypt('Pass@123', gen_salt('bf')), 'employee',
    'Neha Gupta',  6, '+91 98765 10006', 'Hyderabad, TS', '1997-06-15',
    'Finance',     'Finance Analyst',      '2024-05-01', 'HDFC000100005',
    'Experienced Finance Analyst with a passion for delivering high-quality results.'),
 
   ('20000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000001',
-   'OI-EMP-2024-007', 'vikram.singh@hrms.com', crypt('Pass@123', gen_salt('bf')), 'employee',
+   'OIVISI2024007', 'vikram.singh@hrms.com', crypt('Pass@123', gen_salt('bf')), 'employee',
    'Vikram Singh',7, '+91 98765 10007', 'Kolkata, WB',   '1998-07-16',
    'Engineering', 'DevOps Engineer',      '2024-03-15', 'HDFC000100006',
    'Experienced DevOps Engineer with a passion for delivering high-quality results.');
