@@ -12,6 +12,8 @@ Pages.Profile = (() => {
     const currentUser = Auth.requireAuth();
     if (!currentUser) return;
 
+    profilePicBase64 = null; // Clear any pending profile pic from a previous edit
+
     const params = Router.getParams();
     const uid    = params.id || currentUser.id;
     const mode   = params.mode || 'view';
@@ -429,6 +431,7 @@ Pages.Profile = (() => {
   // ── Save / Cancel ────────────────────────────────────────────
   const cancelEdit = () => {
     editMode = false;
+    profilePicBase64 = null;
     targetUser = Store.getUserById(targetUser.id);
     Router.go('profile', { id: targetUser.id, mode: 'view' });
   };
@@ -449,7 +452,10 @@ Pages.Profile = (() => {
     updates.certifications = targetUser.certifications || [];
 
     // Profile pic
-    if (profilePicBase64) updates.profilePic = profilePicBase64;
+    if (profilePicBase64) {
+      updates.profilePic = profilePicBase64;
+      profilePicBase64 = null; // Reset after saving
+    }
 
     Store.updateUser(targetUser.id, updates);
     targetUser = Store.getUserById(targetUser.id);

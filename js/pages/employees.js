@@ -351,7 +351,7 @@ Pages.Employees = (() => {
     document.getElementById('ae-submit-btn').onclick = () => {
       Utils.closeModal();
       Utils.toast(`${fname} ${lname} added successfully!`, 'success');
-      _refreshGrid();
+      Pages.Employees.render();
     };
   };
 
