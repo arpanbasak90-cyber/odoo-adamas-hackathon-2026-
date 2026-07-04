@@ -1,0 +1,121 @@
+﻿Total pages: 4
+=== PAGE 1 ===
+ 
+1.1 Pu rpose   
+The pur pose of this  document is to defin e the  functional and non-functional 
+requir ements of a Hum an Resource Ma nagement System HRMS . The system aims to 
+digitiz e and streamline core HR  opera tions such a s employee onboarding, pr ofile 
+management, attendance tra cking, leave management, payroll visibility, and approval 
+workflows for admins and HR  officers .  
+1.2 Scope   
+The HR MS will pr ovide:  
+? Secure authen tication (Sign Up / S ign In)  
+? Role-based access (Admin vs Employee)  
+? Employee pr ofile m anagement  
+? Attendance tra cking (daily/weekly vie w)  
+? Leave and tim e-off management  
+? Approval workflows for HR/Admin  
+ 
+1.3 Definition s & A bbreviation s  
+? Admin / HR  Officer: Us er with m anagement and approval privileges 
+? Employee: R egula r user with lim ited acces s  
+? Time-Off: Paid leave, sick leave, un paid leave, etc.  
+ Human Resource Management System
+Every workday, perfectly aligned. 
+1. Introduction
+
+=== PAGE 2 ===
+ 
+3.1 Authentication  & A uthorization  
+3.1.1 Sign Up  
+? Users can register us ing:  
+? Employee ID  
+? Email  
+? Password  
+? Role Em ployee / HR   
+? Password must follow secur ity rules .  
+? Email verification is requir ed.  
+3.1.2 Sign In  
+? Users can log in using em ail and password.  
+? Incorrect cr eden tials should dis play error messages.  
+? Succe ssful lo gin redirects to the dashboard.  
+ 
+3.2 Da shboard  
+3.2.1 Employee D ashboard  
+? Displays quick -access cards:  
+? Profile  
+? Attendance  
+? Leave Reque sts  
+? Logout  
+? Shows recen t activit y or alerts.   
+User Type  Description  
+Admin / HR  
+Officer Manages employees, approves leave & attendance, vie ws 
+payroll det ails 
+Employee Views pers onal profile, a ttendance, a pplies  for leave, vie ws 
+salary details 2. User Classes and Characteristics
+3. Functional Requirements
+
+=== PAGE 3 ===
+ 
+3.3 Employee Pr ofile M anagement  
+3.3.1 View Profile  
+? Employees can view:  
+? Personal details  
+? Job det ails  
+? Salary structur e  
+? Documents  
+? Profile pictur e  
+3.3.2 Edit P rofile  
+? Employees can edit lim ited fields  (address, pho ne, pr ofile pictur e). 
+? Admin can edit all em ployee details.  
+3.4 A ttendance Management  
+3.4.1 Attendance Tracking  
+? Daily and weekly attendance vie ws.  
+? Option for check-in/check-out for em ployee  
+? Status types:  
+? Present 
+? Absent  
+? Half-day  
+? Leave  
+3.4.2 Attendance V iew  
+? Employees can view only the ir own attendance.  
+? Admin/HR can view attendance of all employees.  
+ 
+  3.2.2 Admin / HR  Dashboard  
+? Displays:  
+? Employee lis t  
+? Attendance records  
+? Leave approvals  
+? Ability to switch bet ween employees.  
+ 
+
+=== PAGE 4 ===
+ 
+3.5 Le ave & Tim e-Off Managem ent  
+3.5.1 Apply for Leave Em ployee  
+? Employees can:  
+? Select le ave type (Paid, Sick, Unpaid)  
+? Cho ose date range by directly selectin g on calendar 
+? Add remarks, show attendance in  a monthly calendar with P resent/Absent 
+markers. 
+? Leave reques t status:  
+? Pending  
+? Approved  
+? Reject ed  
+3.5.2 Leave Approval Admin/HR  
+? Admin can:  
+? View all leave reques ts  
+? Approve or reject r eques ts  
+? Add co mments  
+? Cha nges reflect im mediately in employee records.  
+3.6 Payroll/Sa lary Managem ent  
+3.6.1 Employee Payroll View  
+? Payroll data is read-only for em ployees. 
+3.6.2 Admin Payroll Control  
+? Admin can:  
+? View payroll of all em ployees  
+? Upda te salary structur e  
+? Ensure payroll accura cy  
+Excalidraw: https://lin k.excalidraw.com /l/65V Nwvy7c4X/58 RLEJ4oO wh  
+

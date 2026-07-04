@@ -1,0 +1,204 @@
+/* ============================================================
+   HRMS Global Styles — Resets, Base, Animations
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-900);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input, select, textarea { font-family: inherit; }
+ul, ol { list-style: none; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border-2); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-400); }
+
+/* ── Keyframes ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-5px); }
+  80%       { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes statusPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+}
+
+/* ── Animation Utilities ── */
+.animate-fade-in     { animation: fadeIn 300ms ease both; }
+.animate-fade-in-up  { animation: fadeInUp 350ms ease both; }
+.animate-fade-in-down{ animation: fadeInDown 300ms ease both; }
+.animate-scale-in    { animation: scaleIn 250ms ease both; }
+.animate-shake       { animation: shake 400ms ease; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
+.stagger > *:nth-child(7) { animation-delay: 300ms; }
+.stagger > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ── Layout Utilities ── */
+.flex         { display: flex; }
+.flex-col     { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center  { justify-content: center; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+
+/* ── App Shell ── */
+#app { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Page Wrapper (authenticated) ── */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+  padding: var(--space-6) var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  margin-top: var(--navbar-height);
+}
+
+/* ── Text Utilities ── */
+.text-xs     { font-size: var(--font-size-xs); }
+.text-sm     { font-size: var(--font-size-sm); }
+.text-base   { font-size: var(--font-size-base); }
+.text-md     { font-size: var(--font-size-md); }
+.text-lg     { font-size: var(--font-size-lg); }
+.text-xl     { font-size: var(--font-size-xl); }
+.text-2xl    { font-size: var(--font-size-2xl); }
+.text-3xl    { font-size: var(--font-size-3xl); }
+
+.font-medium   { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold     { font-weight: var(--font-weight-bold); }
+
+.text-muted   { color: var(--color-text-500); }
+.text-primary { color: var(--color-primary); }
+.text-danger  { color: var(--color-danger); }
+.text-success { color: var(--color-success); }
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+/* ── Loading Spinner ── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+  display: inline-block;
+}
+
+/* ── Toast Notifications ── */
+.toast-container {
+  position: fixed;
+  top: var(--space-5);
+  right: var(--space-5);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  animation: slideInRight 300ms ease both;
+  pointer-events: all;
+  min-width: 280px;
+  max-width: 380px;
+}
+.toast.success { border-left: 3px solid var(--color-success); }
+.toast.error   { border-left: 3px solid var(--color-danger); }
+.toast.info    { border-left: 3px solid var(--color-primary); }
+.toast.warning { border-left: 3px solid var(--color-warning); }
+.toast-icon { font-size: 16px; flex-shrink: 0; }
+.toast-msg  { flex: 1; color: var(--color-text-700); }
