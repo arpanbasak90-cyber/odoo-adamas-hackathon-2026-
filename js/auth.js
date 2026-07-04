@@ -25,7 +25,7 @@ const Auth = (() => {
   // Async fetch for fresh user data
   const getCurrentUser = async () => {
     const session = getSession();
-    if (!session) return null;
+    if (!session || !session.id) return null;
     try {
       const user = await Store.getUserById(session.id);
       _cachedUser = user;
@@ -95,7 +95,8 @@ const Auth = (() => {
   // Route guard — call at top of each page init
   const requireAuth = (role = null) => {
     const user = getSession();
-    if (!user) {
+    if (!user || !user.id) {
+      clearSession();
       window.location.hash = '#/login';
       return null;
     }
