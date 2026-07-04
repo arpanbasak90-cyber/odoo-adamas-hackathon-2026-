@@ -71,7 +71,7 @@ Pages.Login = (() => {
           <div class="auth-loginid-hint">
             <strong>Demo credentials:</strong><br>
             Admin: <code>admin@hrms.com</code> / <code>Admin@123</code><br>
-            Employee: <code>OIJODO2024001</code> / <code>Pass@123</code>
+            Employee: <code>OI-EMP-2024-001</code> / <code>Pass@123</code>
           </div>
 
           <div class="auth-form-footer" style="margin-top:var(--space-5)">
@@ -130,7 +130,7 @@ Pages.Login = (() => {
     setTimeout(async () => {
       const result = await Auth.login(loginId, password, remember);
       if (result.ok) {
-        Utils.toast('Welcome back, ' + result.user.name.split(' ')[0] + '!', 'success');
+        Utils.toast('Welcome back, ' + (result.user.name?.split(' ')?.[0] || 'User') + '!', 'success');
         setTimeout(() => Router.go('employees'), 300);
       } else {
         formErr.textContent = result.error;
