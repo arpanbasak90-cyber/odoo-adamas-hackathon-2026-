@@ -514,11 +514,19 @@ CREATE POLICY "docs_admin_all"     ON public.documents FOR ALL    USING (public.
 CREATE POLICY "docs_self_all"      ON public.documents FOR ALL
   USING (employee_id = public.fn_current_employee_id());
 
--- company and holidays: read for all authenticated, write for admin
-CREATE POLICY "company_read_all"     ON public.company   FOR SELECT USING (auth.uid() IS NOT NULL);
+-- company and holidays: public read (app uses custom password auth, not Supabase Auth,
+-- so auth.uid() is always null — we allow anonymous reads for these safe tables)
+CREATE POLICY "company_read_public"  ON public.company   FOR SELECT USING (true);
 CREATE POLICY "company_admin_write"  ON public.company   FOR ALL    USING (public.fn_is_admin());
-CREATE POLICY "holidays_read_all"    ON public.holidays  FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "holidays_read_public" ON public.holidays  FOR SELECT USING (true);
 CREATE POLICY "holidays_admin_write" ON public.holidays  FOR ALL    USING (public.fn_is_admin());
+
+-- Grant anon role access to execute custom auth functions and read safe tables
+GRANT EXECUTE ON FUNCTION public.fn_verify_password TO anon;
+GRANT EXECUTE ON FUNCTION public.fn_is_admin TO anon;
+GRANT EXECUTE ON FUNCTION public.fn_current_employee_id TO anon;
+GRANT SELECT ON public.company  TO anon;
+GRANT SELECT ON public.holidays TO anon;
 
 
 -- ============================================================
