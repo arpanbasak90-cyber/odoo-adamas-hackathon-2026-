@@ -1,5 +1,5 @@
 /* ============================================================
-   HRMS App — Router, Layout, Navbar renderer
+   HRMS App — Router, Layout, Navbar renderer (Supabase Async Version)
    ============================================================ */
 
 // ── Global Pages namespace (must be at top, page scripts assign to this) ──
@@ -19,14 +19,14 @@ const App = (() => {
   };
 
   // ── Render Navbar ─────────────────────────────────────────────
-  const renderNavbar = (activePage) => {
-    const user    = Auth.getCurrentUser();
-    const company = Store.getCompany();
+  const renderNavbar = async (activePage) => {
+    const user    = Auth.getCurrentUserSync();
+    const company = await Store.getCompany();
     const isAdmin = Auth.isAdmin();
 
-    const todayAtt  = user ? Store.getTodayAttendance(user.id) : null;
+    const todayAtt  = user ? await Store.getTodayAttendance(user.id) : null;
     const checkedIn = todayAtt && todayAtt.checkIn && !todayAtt.checkOut;
-    const pendingCount = isAdmin ? Store.getPendingLeaves().length : 0;
+    const pendingCount = isAdmin ? (await Store.getPendingLeaves()).length : 0;
 
     const companyName = company?.name || 'HRMS';
     const companyInitial = companyName[0]?.toUpperCase() || 'H';
@@ -81,10 +81,11 @@ const App = (() => {
   };
 
   // ── Render Page Shell ─────────────────────────────────────────
-  const renderShell = (activePage, content) => {
+  const renderShell = async (activePage, content) => {
+    const navbarHTML = await renderNavbar(activePage);
     return `
       <div class="page-wrapper">
-        ${renderNavbar(activePage)}
+        ${navbarHTML}
         <div class="page-content animate-fade-in">
           ${content}
         </div>
@@ -109,7 +110,7 @@ const App = (() => {
   });
 
   const goMyProfile = () => {
-    const user = Auth.getCurrentUser();
+    const user = Auth.getCurrentUserSync();
     if (user) Router.go('profile', { id: user.id, mode: 'edit' });
     const menu = document.getElementById('avatar-dropdown-menu');
     if (menu) menu.style.display = 'none';
@@ -117,8 +118,7 @@ const App = (() => {
 
   // ── Init ──────────────────────────────────────────────────────
   const init = () => {
-    // Seed demo data on first run
-    Seed.run();
+    // Seed demo data is handled in PostgreSQL database initialization, so Seed.run() is skipped.
     // Start router
     Router.init();
   };
@@ -129,13 +129,13 @@ const App = (() => {
 // ── Router ────────────────────────────────────────────────────
 const Router = (() => {
   const routes = {
-    '':          () => Auth.isLoggedIn() ? go('employees') : go('login'),
-    'login':     () => Pages.Login.render(),
-    'signup':    () => Pages.Signup.render(),
-    'employees': () => Pages.Employees.render(),
-    'attendance':() => Pages.Attendance.render(),
-    'leave':     () => Pages.Leave.render(),
-    'profile':   () => Pages.Profile.render(),
+    '':          async () => Auth.isLoggedIn() ? go('employees') : go('login'),
+    'login':     async () => Pages.Login.render(),
+    'signup':    async () => Pages.Signup.render(),
+    'employees': async () => Pages.Employees.render(),
+    'attendance':async () => Pages.Attendance.render(),
+    'leave':     async () => Pages.Leave.render(),
+    'profile':   async () => Pages.Profile.render(),
   };
 
   let params = {};
@@ -157,13 +157,13 @@ const Router = (() => {
   };
 
   const init = () => {
-    const navigate = () => {
+    const navigate = async () => {
       const { page, params: qp } = parseHash();
       params = qp;
       const handler = routes[page] || routes[''];
       const app     = document.getElementById('app');
       if (app) app.innerHTML = '';
-      handler();
+      await handler();
     };
     window.addEventListener('hashchange', navigate);
     navigate();

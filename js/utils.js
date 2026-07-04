@@ -148,13 +148,13 @@ const Utils = (() => {
     return `<span class="badge ${s.cls}"><span class="badge-dot"></span>${s.label}</span>`;
   };
 
-  const employeeCardStatus = (userId) => {
+  const employeeCardStatus = async (userId) => {
     const today_str = today();
-    const att = Store.getAttendanceByUserAndDate(userId, today_str);
-    const leaves = Store.getLeavesByUser(userId);
-    const onLeave = leaves.some(l => l.status === 'approved' && l.startDate <= today_str && l.endDate >= today_str);
-    if (onLeave) return 'on-leave';
-    if (att && att.checkIn) return 'present';
+    const att = await Store.getAttendanceByUserAndDate(userId, today_str);
+    if (att) {
+      if (att.status === 'leave') return 'on-leave';
+      return att.status; // present, half-day, absent
+    }
     return 'absent';
   };
 

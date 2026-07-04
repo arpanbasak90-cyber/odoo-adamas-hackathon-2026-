@@ -1,21 +1,24 @@
 /* ============================================================
-   Leave / Time Off Page
+   Leave / Time Off Page (Supabase Async Version)
    ============================================================ */
 Pages.Leave = (() => {
 
   let activeTab = 'timeoff'; // 'timeoff' | 'allocation'
 
-  const render = () => {
+  const render = async () => {
     const user = Auth.requireAuth();
     if (!user) return;
     document.title = 'Time Off — HRMS';
 
-    document.getElementById('app').innerHTML = App.renderShell('leave', _buildHTML(user));
+    document.getElementById('app').innerHTML = await App.renderShell('leave', await _buildHTML(user));
     _bindEvents(user);
   };
 
-  const _buildHTML = (user) => {
+  const _buildHTML = async (user) => {
     const isAdmin = Auth.isAdmin();
+    const balanceCardsHTML = await _renderBalanceCards(user);
+    const mainContentHTML = isAdmin ? await _renderAdminTable() : await _renderEmployeeView(user);
+
     return `
     <div class="page-header">
       <div class="page-header-left">
@@ -44,17 +47,17 @@ Pages.Leave = (() => {
 
     <!-- Leave Balance Cards -->
     <div class="leave-balance-cards animate-fade-in-up" id="balance-cards">
-      ${_renderBalanceCards(user)}
+      ${balanceCardsHTML}
     </div>
 
     <!-- Main Content -->
     <div id="leave-main-content">
-      ${isAdmin ? _renderAdminTable() : _renderEmployeeView(user)}
+      ${mainContentHTML}
     </div>`;
   };
 
-  const _renderBalanceCards = (user) => {
-    const bal = Store.getLeaveBalance(user.id);
+  const _renderBalanceCards = async (user) => {
+    const bal = await Store.getLeaveBalance(user.id);
     return `
     <div class="leave-balance-card">
       <div class="leave-balance-icon" style="background:#FEF3C7">🌴</div>
@@ -80,8 +83,11 @@ Pages.Leave = (() => {
   };
 
   // ── Employee View: 12-month calendar ──────────────────────────
-  const _renderEmployeeView = (user) => {
+  const _renderEmployeeView = async (user) => {
     const year = new Date().getFullYear();
+    const calendarHTML = await _renderYearCalendar(user, year);
+    const leavesHTML = await _renderMyLeaves(user);
+
     return `
     <!-- Legend -->
     <div class="leave-legend">
@@ -93,7 +99,7 @@ Pages.Leave = (() => {
 
     <!-- 12-Month Calendar Grid -->
     <div class="year-calendar stagger" id="year-calendar">
-      ${_renderYearCalendar(user, year)}
+      ${calendarHTML}
     </div>
 
     <!-- My Leave Requests Table -->
@@ -109,16 +115,16 @@ Pages.Leave = (() => {
             </tr>
           </thead>
           <tbody>
-            ${_renderMyLeaves(user)}
+            ${leavesHTML}
           </tbody>
         </table>
       </div>
     </div>`;
   };
 
-  const _renderYearCalendar = (user, year) => {
-    const leaves   = Store.getLeavesByUser(user.id);
-    const holidays = Store.getHolidays();
+  const _renderYearCalendar = async (user, year) => {
+    const leaves   = await Store.getLeavesByUser(user.id);
+    const holidays = await Store.getHolidays();
     const today    = Utils.today();
 
     const leaveMap = {};
@@ -171,13 +177,13 @@ Pages.Leave = (() => {
     return months.join('');
   };
 
-  const _renderMyLeaves = (user) => {
-    const leaves = Store.getLeavesByUser(user.id);
+  const _renderMyLeaves = async (user) => {
+    const leaves = await Store.getLeavesByUser(user.id);
     if (!leaves.length) return `<tr><td colspan="6"><div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon">🏖️</div><div class="empty-state-title">No leave requests yet</div></div></td></tr>`;
 
     return leaves.map(l => `
     <tr>
-      <td><span class="badge ${l.type === 'paid' ? 'badge-success' : l.type === 'sick' ? 'badge-danger' : 'badge-gray'}">${l.type === 'paid' ? '🌴 Paid' : l.type === 'sick' ? '🤒 Sick' : '📋 Unpaid'}</span></td>
+      <td><span class="badge ${l.leaveType === 'paid' ? 'badge-success' : l.leaveType === 'sick' ? 'badge-danger' : 'badge-gray'}">${l.leaveType === 'paid' ? '🌴 Paid' : l.leaveType === 'sick' ? '🤒 Sick' : '📋 Unpaid'}</span></td>
       <td>${Utils.formatDate(l.startDate)}</td>
       <td>${Utils.formatDate(l.endDate)}</td>
       <td><strong>${l.allocation || 1}</strong> day${l.allocation > 1 ? 's' : ''}</td>
@@ -190,33 +196,32 @@ Pages.Leave = (() => {
   };
 
   // ── Admin View: Table with Approve/Reject ────────────────────
-  const _renderAdminTable = (searchTerm = '') => {
-    let leaves = Store.getAllLeaves();
+  const _renderAdminTable = async (searchTerm = '') => {
+    let leaves = await Store.getAllLeaves();
     if (searchTerm) {
-      leaves = leaves.filter(l => {
-        const user = Store.getUserById(l.userId);
-        return user?.name.toLowerCase().includes(searchTerm.toLowerCase());
-      });
+      leaves = leaves.filter(l => l.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
     const rows = leaves.map(l => {
-      const emp = Store.getUserById(l.userId);
-      if (!emp) return '';
+      const avatarHTML = l.employeeAvatar 
+        ? `<div class="avatar avatar-sm"><img src="${l.employeeAvatar}" alt="${l.employeeName}" /></div>`
+        : `<div class="avatar avatar-sm" style="background:${Utils.getAvatarGradient(l.employeeName || '')}">${Utils.getInitials(l.employeeName || '?')}</div>`;
+
       return `
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:var(--space-3)">
-            ${Utils.avatarHTML(emp, 'sm')}
+            ${avatarHTML}
             <div>
-              <div style="font-weight:600;font-size:var(--font-size-sm)">${emp.name}</div>
-              <div style="font-size:var(--font-size-xs);color:var(--color-text-400)">${emp.department || ''}</div>
+              <div style="font-weight:600;font-size:var(--font-size-sm)">${l.employeeName || '—'}</div>
+              <div style="font-size:var(--font-size-xs);color:var(--color-text-400)">${l.employeeDepartment || ''}</div>
             </div>
           </div>
         </td>
         <td>${Utils.formatDate(l.startDate)}</td>
         <td>${Utils.formatDate(l.endDate)}</td>
         <td>${l.allocation || 1} day${(l.allocation||1)>1?'s':''}</td>
-        <td><span class="badge ${l.type==='paid'?'badge-success':l.type==='sick'?'badge-danger':'badge-gray'}">${l.type==='paid'?'Paid':l.type==='sick'?'Sick':'Unpaid'}</span></td>
+        <td><span class="badge ${l.leaveType==='paid'?'badge-success':l.leaveType==='sick'?'badge-danger':'badge-gray'}">${l.leaveType==='paid'?'Paid':l.leaveType==='sick'?'Sick':'Unpaid'}</span></td>
         <td>${Utils.statusBadge(l.status)}</td>
         <td>
           ${l.status === 'pending' ? `
@@ -244,16 +249,17 @@ Pages.Leave = (() => {
   };
 
   // ── Approve / Reject ─────────────────────────────────────────
-  const approveLeave = (id) => {
-    _openCommentModal(id, 'approve');
+  const approveLeave = async (id) => {
+    await _openCommentModal(id, 'approve');
   };
-  const rejectLeave = (id) => {
-    _openCommentModal(id, 'reject');
+  
+  const rejectLeave = async (id) => {
+    await _openCommentModal(id, 'reject');
   };
 
-  const _openCommentModal = (leaveId, action) => {
-    const leave = Store.getLeaveById(leaveId);
-    const emp   = Store.getUserById(leave?.userId);
+  const _openCommentModal = async (leaveId, action) => {
+    const leave = await Store.getLeaveById(leaveId);
+    const emp   = await Store.getUserById(leave?.userId);
     const isApprove = action === 'approve';
 
     Utils.openModal(`
@@ -283,29 +289,31 @@ Pages.Leave = (() => {
       </div>`);
   };
 
-  const _confirmLeaveAction = (leaveId, action) => {
+  const _confirmLeaveAction = async (leaveId, action) => {
     const comment = document.getElementById('leave-comment')?.value?.trim();
     if (action === 'approve') {
-      Store.approveLeave(leaveId, comment);
+      await Store.approveLeave(leaveId, comment);
       Utils.toast('Leave approved successfully!', 'success');
     } else {
-      Store.rejectLeave(leaveId, comment);
+      await Store.rejectLeave(leaveId, comment);
       Utils.toast('Leave rejected.', 'info');
     }
     Utils.closeModal();
+
     // Re-render main content
     const content = document.getElementById('leave-main-content');
-    if (content) content.innerHTML = _renderAdminTable();
+    if (content) content.innerHTML = await _renderAdminTable();
+
     // Update pending badge in navbar
     const badge = document.querySelector('#nav-leave .badge');
-    const pending = Store.getPendingLeaves().length;
+    const pending = (await Store.getPendingLeaves()).length;
     if (badge) badge.textContent = pending > 0 ? pending : '';
     if (badge && pending === 0) badge.style.display = 'none';
   };
 
   // ── New Leave Request Modal (Employee) ───────────────────────
-  const _openNewLeaveModal = (user) => {
-    const employees = Auth.isAdmin() ? Store.getEmployees() : [user];
+  const _openNewLeaveModal = async (user) => {
+    const employees = Auth.isAdmin() ? await Store.getEmployees() : [user];
 
     Utils.openModal(`
       <div class="modal animate-scale-in timeoff-modal">
@@ -387,7 +395,7 @@ Pages.Leave = (() => {
     });
   };
 
-  const submitLeave = () => {
+  const submitLeave = async () => {
     const uid     = document.getElementById('to-employee')?.value;
     const type    = document.getElementById('to-type')?.value;
     const start   = document.getElementById('to-start')?.value;
@@ -402,20 +410,48 @@ Pages.Leave = (() => {
     if (end < start)                     { errEl.textContent = 'End date must be on or after start date.'; return; }
 
     const allocation = Utils.dateDiff(start, end);
-    Store.createLeave({ userId: uid, type, startDate: start, endDate: end, remarks, allocation, attachmentName: attachName });
+    await Store.createLeave({ userId: uid, type, startDate: start, endDate: end, remarks, allocation, attachmentName: attachName });
     Utils.closeModal();
     Utils.toast('Leave request submitted successfully!', 'success');
 
     // Refresh page content
-    const user = Auth.getCurrentUser();
+    const user = Auth.getCurrentUserSync();
     const content = document.getElementById('leave-main-content');
     if (content) {
-      content.innerHTML = Auth.isAdmin() ? _renderAdminTable() : _renderEmployeeView(Store.getUserById(uid) || user);
+      content.innerHTML = Auth.isAdmin() ? await _renderAdminTable() : await _renderEmployeeView(await Store.getUserById(uid) || user);
     }
   };
 
-  const _renderAllocationTab = () => {
-    const employees = Store.getEmployees();
+  const _renderAllocationTab = async () => {
+    const employees = await Store.getEmployees();
+    
+    // Map leave balances
+    const rowsHTML = await Promise.all(employees.map(async (e) => {
+      const bal = await Store.getLeaveBalance(e.id);
+      return `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:var(--space-3)">
+            ${Utils.avatarHTML(e, 'sm')}
+            <span style="font-weight:600;font-size:var(--font-size-sm)">${e.name}</span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:var(--space-2)">
+            <input type="number" value="${bal.paid}" min="0" max="365" class="form-input" style="width:70px;padding:4px 8px;font-size:12px" onchange="Pages.Leave.updateBalance('${e.id}','paid',this.value)" />
+            <span style="font-size:var(--font-size-xs);color:var(--color-text-400)">days</span>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:var(--space-2)">
+            <input type="number" value="${bal.sick}" min="0" max="365" class="form-input" style="width:70px;padding:4px 8px;font-size:12px" onchange="Pages.Leave.updateBalance('${e.id}','sick',this.value)" />
+            <span style="font-size:var(--font-size-xs);color:var(--color-text-400)">days</span>
+          </div>
+        </td>
+        <td><span class="badge badge-gray">Unlimited</span></td>
+        <td><span style="font-size:var(--font-size-xs);color:var(--color-success)">Auto-saved</span></td>
+      </tr>`;
+    }));
+
     return `
     <div class="table-container">
       <table class="table">
@@ -423,38 +459,14 @@ Pages.Leave = (() => {
           <tr><th>Employee</th><th>Paid Leave</th><th>Sick Leave</th><th>Unpaid</th><th>Actions</th></tr>
         </thead>
         <tbody>
-          ${employees.map(e => {
-            const bal = Store.getLeaveBalance(e.id);
-            return `<tr>
-              <td>
-                <div style="display:flex;align-items:center;gap:var(--space-3)">
-                  ${Utils.avatarHTML(e, 'sm')}
-                  <span style="font-weight:600;font-size:var(--font-size-sm)">${e.name}</span>
-                </div>
-              </td>
-              <td>
-                <div style="display:flex;align-items:center;gap:var(--space-2)">
-                  <input type="number" value="${bal.paid}" min="0" max="365" class="form-input" style="width:70px;padding:4px 8px;font-size:12px" onchange="Pages.Leave.updateBalance('${e.id}','paid',this.value)" />
-                  <span style="font-size:var(--font-size-xs);color:var(--color-text-400)">days</span>
-                </div>
-              </td>
-              <td>
-                <div style="display:flex;align-items:center;gap:var(--space-2)">
-                  <input type="number" value="${bal.sick}" min="0" max="365" class="form-input" style="width:70px;padding:4px 8px;font-size:12px" onchange="Pages.Leave.updateBalance('${e.id}','sick',this.value)" />
-                  <span style="font-size:var(--font-size-xs);color:var(--color-text-400)">days</span>
-                </div>
-              </td>
-              <td><span class="badge badge-gray">Unlimited</span></td>
-              <td><span style="font-size:var(--font-size-xs);color:var(--color-success)">Auto-saved</span></td>
-            </tr>`;
-          }).join('')}
+          ${rowsHTML.join('')}
         </tbody>
       </table>
     </div>`;
   };
 
-  const updateBalance = (userId, field, value) => {
-    Store.updateLeaveBalance(userId, { [field]: parseInt(value) || 0 });
+  const updateBalance = async (userId, field, value) => {
+    await Store.updateLeaveBalance(userId, { [field]: parseInt(value) || 0 });
   };
 
   const _bindEvents = (user) => {
@@ -462,19 +474,19 @@ Pages.Leave = (() => {
 
     // Tab switching (Admin)
     document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         activeTab = btn.dataset.tab;
         const content = document.getElementById('leave-main-content');
-        if (content) content.innerHTML = activeTab === 'allocation' ? _renderAllocationTab() : _renderAdminTable();
+        if (content) content.innerHTML = activeTab === 'allocation' ? await _renderAllocationTab() : await _renderAdminTable();
       });
     });
 
     // Search
-    document.getElementById('leave-search')?.addEventListener('input', (e) => {
+    document.getElementById('leave-search')?.addEventListener('input', async (e) => {
       const content = document.getElementById('leave-main-content');
-      if (content) content.innerHTML = _renderAdminTable(e.target.value);
+      if (content) content.innerHTML = await _renderAdminTable(e.target.value);
     });
   };
 

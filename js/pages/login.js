@@ -1,12 +1,12 @@
 /* ============================================================
-   Login Page
+   Login Page (Supabase Async Version)
    ============================================================ */
 Pages.Login = (() => {
 
-  const render = () => {
+  const render = async () => {
     if (!Auth.requireGuest()) return;
     document.title = 'Sign In — HRMS';
-    const company = Store.getCompany();
+    const company = await Store.getCompany();
     const companyName = company?.name || 'HRMS';
 
     document.getElementById('app').innerHTML = `
@@ -108,7 +108,7 @@ Pages.Login = (() => {
     });
   };
 
-  const _submit = () => {
+  const _submit = async () => {
     const loginId  = document.getElementById('loginId')?.value?.trim();
     const password = document.getElementById('password')?.value;
     const remember = document.getElementById('remember-me')?.checked;
@@ -126,8 +126,9 @@ Pages.Login = (() => {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Signing in...';
 
-    setTimeout(() => {
-      const result = Auth.login(loginId, password, remember);
+    // Simulated short delay for animation/spinner
+    setTimeout(async () => {
+      const result = await Auth.login(loginId, password, remember);
       if (result.ok) {
         Utils.toast('Welcome back, ' + result.user.name.split(' ')[0] + '!', 'success');
         setTimeout(() => Router.go('employees'), 300);

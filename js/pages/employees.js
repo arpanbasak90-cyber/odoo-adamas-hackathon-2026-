@@ -1,5 +1,5 @@
 /* ============================================================
-   Employees Grid Page — Landing page after login
+   Employees Grid Page (Supabase Async Version)
    ============================================================ */
 Pages.Employees = (() => {
 
@@ -7,21 +7,24 @@ Pages.Employees = (() => {
   let search = '';
   let clockInterval = null;
 
-  const render = () => {
+  const render = async () => {
     const user = Auth.requireAuth();
     if (!user) return;
     document.title = 'Employees — HRMS';
 
-    document.getElementById('app').innerHTML = App.renderShell('employees', _buildHTML(user));
+    const shellHTML = await App.renderShell('employees', await _buildHTML(user));
+    document.getElementById('app').innerHTML = shellHTML;
     _bindEvents(user);
     _startClock();
-    _updateCheckinWidget(user);
+    await _updateCheckinWidget(user);
   };
 
-  const _buildHTML = (user) => {
+  const _buildHTML = async (user) => {
     const isAdmin  = Auth.isAdmin();
-    const employees= Store.getUsers().filter(u => u.role !== 'admin' || isAdmin);
+    const allUsers = await Store.getUsers();
+    const employees = allUsers.filter(u => u.role !== 'admin' || isAdmin);
     const today    = Utils.today();
+    const gridHTML = await _renderGrid(allUsers.filter(u => isAdmin || u.role === 'employee'));
 
     return `
     <!-- Check-in Widget -->
@@ -48,7 +51,7 @@ Pages.Employees = (() => {
     <div class="page-header">
       <div class="page-header-left">
         <h1 class="page-title">Employees</h1>
-        <p class="page-subtitle">${Store.getEmployees().length} team members</p>
+        <p class="page-subtitle">${employees.filter(e => e.role === 'employee').length} team members</p>
       </div>
       <div class="page-header-right">
         <!-- Filter Pills -->
@@ -79,13 +82,16 @@ Pages.Employees = (() => {
 
     <!-- Employees Grid -->
     <div class="employees-grid stagger" id="employees-grid">
-      ${_renderGrid(Store.getUsers().filter(u => isAdmin || u.role === 'employee'))}
+      ${gridHTML}
     </div>`;
   };
 
-  const _renderGrid = (users) => {
-    const filtered = users.filter(u => {
-      const statusMatch = filter === 'all' || Utils.employeeCardStatus(u.id) === filter;
+  const _renderGrid = async (users) => {
+    const statuses = await Promise.all(users.map(u => Utils.employeeCardStatus(u.id)));
+
+    const filtered = users.filter((u, index) => {
+      const status = statuses[index];
+      const statusMatch = filter === 'all' || status === filter;
       const searchMatch = !search || u.name.toLowerCase().includes(search) || u.designation?.toLowerCase().includes(search) || u.department?.toLowerCase().includes(search);
       return statusMatch && searchMatch;
     });
@@ -99,8 +105,8 @@ Pages.Employees = (() => {
         </div>
       </div>`;
 
-    return filtered.map(u => {
-      const status    = Utils.employeeCardStatus(u.id);
+    const mappedHTML = await Promise.all(filtered.map(async (u) => {
+      const status = await Utils.employeeCardStatus(u.id);
       const statusCls = status;
       const statusIcon= status === 'on-leave' ? '✈️' : '';
 
@@ -118,11 +124,13 @@ Pages.Employees = (() => {
           <span class="badge badge-gray" style="font-size:10px">${u.department || '—'}</span>
         </div>
       </div>`;
-    }).join('');
+    }));
+
+    return mappedHTML.join('');
   };
 
-  const _updateCheckinWidget = (user) => {
-    const att  = Store.getTodayAttendance(user.id);
+  const _updateCheckinWidget = async (user) => {
+    const att  = await Store.getTodayAttendance(user.id);
     const actions = document.getElementById('checkin-actions');
     const statusText = document.getElementById('checkin-status-text');
     const durationWrap = document.getElementById('checkin-duration-wrap');
@@ -194,19 +202,19 @@ Pages.Employees = (() => {
 
   const _bindEvents = (user) => {
     // Filter pills
-    document.getElementById('status-filter')?.addEventListener('click', (e) => {
+    document.getElementById('status-filter')?.addEventListener('click', async (e) => {
       const pill = e.target.closest('.filter-pill');
       if (!pill) return;
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       filter = pill.dataset.filter;
-      _refreshGrid();
+      await _refreshGrid();
     });
 
     // Search
-    document.getElementById('emp-search')?.addEventListener('input', (e) => {
+    document.getElementById('emp-search')?.addEventListener('input', async (e) => {
       search = e.target.value.toLowerCase();
-      _refreshGrid();
+      await _refreshGrid();
     });
 
     // Add employee (Admin)
@@ -215,11 +223,11 @@ Pages.Employees = (() => {
     });
   };
 
-  const _refreshGrid = () => {
+  const _refreshGrid = async () => {
     const isAdmin = Auth.isAdmin();
-    const users   = Store.getUsers().filter(u => isAdmin || u.role === 'employee');
+    const users   = await Store.getUsers();
     const grid    = document.getElementById('employees-grid');
-    if (grid) grid.innerHTML = _renderGrid(users);
+    if (grid) grid.innerHTML = await _renderGrid(users.filter(u => isAdmin || u.role === 'employee'));
   };
 
   // Open profile (view-only when clicking cards)
@@ -228,26 +236,25 @@ Pages.Employees = (() => {
   };
 
   // Check In
-  const doCheckIn = () => {
-    const user = Auth.getCurrentUser();
-    Store.checkIn(user.id);
+  const doCheckIn = async () => {
+    const user = Auth.getCurrentUserSync();
+    await Store.checkIn(user.id);
     Utils.toast('Check-in recorded! Have a productive day 🚀', 'success');
-    _updateCheckinWidget(user);
+    await _updateCheckinWidget(user);
   };
 
   // Check Out
-  const doCheckOut = () => {
-    const user = Auth.getCurrentUser();
-    const att  = Store.checkOut(user.id);
+  const doCheckOut = async () => {
+    const user = Auth.getCurrentUserSync();
+    const att  = await Store.checkOut(user.id);
     if (att) {
       Utils.toast(`Checked out! Worked ${att.workHours}h today 👏`, 'success');
-      _updateCheckinWidget(user);
+      await _updateCheckinWidget(user);
     }
   };
 
   // Add Employee Modal (Admin)
   const _openAddEmployeeModal = () => {
-    const company = Store.getCompany();
     Utils.openModal(`
       <div class="modal modal-lg animate-scale-in">
         <div class="modal-header">
@@ -313,7 +320,7 @@ Pages.Employees = (() => {
     `);
   };
 
-  const submitAddEmployee = () => {
+  const submitAddEmployee = async () => {
     const fname = document.getElementById('ae-fname')?.value?.trim();
     const lname = document.getElementById('ae-lname')?.value?.trim();
     const email = document.getElementById('ae-email')?.value?.trim().toLowerCase();
@@ -329,14 +336,18 @@ Pages.Employees = (() => {
       errEl.textContent = 'Please fill in all required fields.'; return;
     }
     if (!Utils.validate.email(email)) { errEl.textContent = 'Invalid email address.'; return; }
-    if (Store.getUserByEmail(email))  { errEl.textContent = 'An account with this email already exists.'; return; }
+    
+    // Uniqueness validation on Supabase
+    const existing = await Store.getUserByEmail(email);
+    if (existing)  { errEl.textContent = 'An account with this email already exists.'; return; }
 
-    const company  = Store.getCompany();
-    const serial   = Utils.nextSerial();
+    const company  = await Store.getCompany();
+    const allEmps  = await Store.getEmployees();
+    const serial   = allEmps.length + 1;
     const loginId  = Utils.generateLoginId(company?.name || 'HR', fname, lname, new Date(join).getFullYear(), serial);
     const password = Utils.generatePassword();
 
-    const user = Store.createUser({
+    const user = await Store.createUser({
       loginId, name: `${fname} ${lname}`, email, password, role: 'employee',
       companyId: company?.id, department: dept, designation: desig,
       joinDate: join, serialNo: serial, phone,
@@ -348,10 +359,10 @@ Pages.Employees = (() => {
     document.getElementById('gen-password').textContent = password;
     document.getElementById('gen-credentials').style.display = 'block';
     document.getElementById('ae-submit-btn').textContent = 'Close & Done';
-    document.getElementById('ae-submit-btn').onclick = () => {
+    document.getElementById('ae-submit-btn').onclick = async () => {
       Utils.closeModal();
       Utils.toast(`${fname} ${lname} added successfully!`, 'success');
-      Pages.Employees.render();
+      await Pages.Employees.render();
     };
   };
 
