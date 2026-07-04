@@ -454,7 +454,7 @@ ALTER TABLE public.holidays        ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: check if current user is admin
 CREATE OR REPLACE FUNCTION public.fn_is_admin()
-RETURNS BOOLEAN LANGUAGE sql STABLE AS $$
+RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.employees
     WHERE auth_user_id = auth.uid() AND role = 'admin'
@@ -463,7 +463,7 @@ $$;
 
 -- Helper function: get current employee id
 CREATE OR REPLACE FUNCTION public.fn_current_employee_id()
-RETURNS UUID LANGUAGE sql STABLE AS $$
+RETURNS UUID LANGUAGE sql STABLE SECURITY DEFINER AS $$
   SELECT id FROM public.employees WHERE auth_user_id = auth.uid() LIMIT 1;
 $$;
 
