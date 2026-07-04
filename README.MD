@@ -8,7 +8,9 @@ Built as a Single Page Application (SPA) using Vanilla JavaScript, HTML5, and CS
 
 **[https://odoo-adamas-hackathon-2026.vercel.app/](https://odoo-adamas-hackathon-2026.vercel.app/)**
 
-Repo: [https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-](https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-)
+## 🔗 Repo Link
+
+**[https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-](https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-)
 
 ## 📸 Screenshots
 
