@@ -4,6 +4,26 @@ A modern, responsive, and lightweight Human Resource Management System (HRMS) de
 
 Built as a Single Page Application (SPA) using Vanilla JavaScript, HTML5, and CSS3. Data is persisted locally using the browser's `localStorage`, making it incredibly fast and easy to deploy as a frontend-only application for hackathons or demonstrations.
 
+## 🔗 Live Demo
+
+**[https://odoo-adamas-hackathon-2026.vercel.app/](https://odoo-adamas-hackathon-2026.vercel.app/)**
+
+Repo: [https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-](https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-)
+
+## 📸 Screenshots
+
+**Login Page**
+
+
+**Employee Dashboard**
+
+
+**Add New Employee**
+
+
+**Add New Employee — Auto-Generated Credentials**
+
+
 ## ✨ Key Features
 
 ### 🔐 Authentication & Roles
@@ -47,7 +67,7 @@ Since this project relies purely on frontend technologies and `localStorage`, yo
 ### Installation & Usage
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
+   git clone https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-.git
    ```
 2. **Open the App:**
    Simply open `index.html` in your web browser. 
