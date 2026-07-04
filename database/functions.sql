@@ -88,7 +88,7 @@ CREATE OR REPLACE FUNCTION public.fn_add_employee(
   p_monthly_wage  NUMERIC DEFAULT 0,
   p_role          TEXT    DEFAULT 'employee'
 )
-RETURNS public.employees LANGUAGE plpgsql AS $$
+RETURNS public.employees LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_serial    INT;
   v_login_id  TEXT;
