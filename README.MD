@@ -14,7 +14,7 @@ Repo: [https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-](https:
 
 **Login Page**
 
-https://claude.ai/api/fe50b8ad-527e-4257-bd95-ef8cb6b23082/files/db2858ff-eab9-4c78-ae3d-a02bf24c0468/preview
+
 
 **Employee Dashboard**
 
