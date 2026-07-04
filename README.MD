@@ -12,6 +12,10 @@ Built as a Single Page Application (SPA) using Vanilla JavaScript, HTML5, and CS
 
 **[https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-](https://github.com/arpanbasak90-cyber/odoo-adamas-hackathon-2026-)
 
+## 🔗Demo Video Link
+
+https://drive.google.com/file/d/1dqKMqDy3uur8aQnZXaWQuUnboONR4u7g/view?usp=sharing
+
 ## 📸 Screenshots
 
 **Login Page**
