@@ -172,5 +172,5 @@ const Router = (() => {
 // ── Pages namespace ───────────────────────────────────────────
 const Pages = {};
 
-// Start when DOM ready
-document.addEventListener('DOMContentLoaded', App.init);
+// Start when all scripts are loaded
+window.addEventListener('load', App.init);

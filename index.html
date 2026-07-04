@@ -42,16 +42,16 @@
   <script src="js/utils.js"></script>
   <script src="js/seed.js"></script>
 
-  <!-- JavaScript — Pages -->
+  <!-- JavaScript — App Shell & Router (must load BEFORE pages to define Pages namespace) -->
+  <script src="js/app.js"></script>
+
+  <!-- JavaScript — Pages (depend on Pages namespace from app.js) -->
   <script src="js/pages/login.js"></script>
   <script src="js/pages/signup.js"></script>
   <script src="js/pages/employees.js"></script>
   <script src="js/pages/attendance.js"></script>
   <script src="js/pages/leave.js"></script>
   <script src="js/pages/profile.js"></script>
-
-  <!-- JavaScript — App Shell & Router (last, depends on all above) -->
-  <script src="js/app.js"></script>
 
 </body>
 </html>
