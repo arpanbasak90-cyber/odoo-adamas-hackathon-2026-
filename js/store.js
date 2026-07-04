@@ -147,12 +147,12 @@ const Store = (() => {
       const { data, error } = await db().from('company').select('*').maybeSingle();
       if (error) {
         console.warn('[Store.getCompany] Could not fetch company (RLS may need configuring):', error.message);
-        return { id: null, name: 'HRMS', logo: null }; // Graceful fallback
+        return { id: '00000000-0000-0000-0000-000000000001', name: 'HRMS', logo: null }; // Graceful fallback with valid UUID
       }
-      return data ? { id: data.id, name: data.name, logo: data.logo_url } : { id: null, name: 'HRMS', logo: null };
+      return data ? { id: data.id, name: data.name, logo: data.logo_url } : { id: '00000000-0000-0000-0000-000000000001', name: 'HRMS', logo: null };
     } catch (e) {
       console.warn('[Store.getCompany] Unexpected error:', e.message);
-      return { id: null, name: 'HRMS', logo: null };
+      return { id: '00000000-0000-0000-0000-000000000001', name: 'HRMS', logo: null };
     }
   };
 

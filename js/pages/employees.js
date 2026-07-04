@@ -172,13 +172,13 @@ Pages.Employees = (() => {
   const _startDurationCounter = (checkInTime) => {
     if (durationInterval) clearInterval(durationInterval);
     const el = document.getElementById('checkin-duration');
-    const [ch, cm] = checkInTime.split(':').map(Number);
-    const checkInMs = (ch * 60 + cm) * 60000;
+    // Convert UTC check-in time to local time milliseconds
+    const todayStr = new Date().toISOString().split('T')[0];
+    const checkInLocal = new Date(`${todayStr}T${checkInTime.slice(0,8)}Z`); // UTC → local
+    const checkInMs = checkInLocal.getTime();
     const update = () => {
       if (!el || !document.contains(el)) { clearInterval(durationInterval); return; }
-      const now = new Date();
-      const nowMs = (now.getHours() * 60 + now.getMinutes()) * 60000 + now.getSeconds() * 1000;
-      const diff = Math.max(0, nowMs - checkInMs);
+      const diff = Math.max(0, Date.now() - checkInMs);
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);

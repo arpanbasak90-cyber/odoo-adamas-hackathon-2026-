@@ -49,10 +49,10 @@ const Utils = (() => {
 
   const formatTime = (timeStr) => {
     if (!timeStr) return '—';
-    const [h, m] = timeStr.split(':').map(Number);
-    const ampm   = h >= 12 ? 'PM' : 'AM';
-    const hr     = h % 12 || 12;
-    return `${hr}:${String(m).padStart(2,'0')} ${ampm}`;
+    // Supabase stores TIME using CURRENT_TIME (UTC). Convert to local time.
+    const today = new Date().toISOString().split('T')[0];
+    const utcDate = new Date(`${today}T${timeStr.slice(0,8)}Z`); // treat as UTC
+    return utcDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
   const formatCurrency = (amount) => {
