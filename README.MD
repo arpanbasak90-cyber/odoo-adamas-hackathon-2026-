@@ -16,6 +16,7 @@ Built as a Single Page Application (SPA) using Vanilla JavaScript, HTML5, and CS
 
 **Login Page**
 
+<img width="1351" height="641" alt="Image" src="https://github.com/user-attachments/assets/281b2855-e469-4e6f-bfd5-cca73334cef6" />
 
 **Employee Dashboard**
 
