@@ -20,12 +20,16 @@ Built as a Single Page Application (SPA) using Vanilla JavaScript, HTML5, and CS
 
 **Employee Dashboard**
 
+<img width="657" height="537" alt="Image" src="https://github.com/user-attachments/assets/82316eb6-4397-455a-8e36-ebf7fbd1f94d" />
+
 
 **Add New Employee**
 
+<img width="1344" height="633" alt="Image" src="https://github.com/user-attachments/assets/ea6ae170-1841-49a4-8f41-78e30028c501" />
 
 **Add New Employee — Auto-Generated Credentials**
 
+<img width="1365" height="656" alt="Image" src="https://github.com/user-attachments/assets/41eff0af-8f06-4162-b98b-527a1d0d4ab1" />
 
 ## ✨ Key Features
 
